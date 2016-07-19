@@ -15,7 +15,7 @@ object WordStats {
 
   def main(args: Array[String]) {
     try {
-      val instream = getClass.getResourceAsStream("/ord.utf8")
+      val instream = getClass.getResourceAsStream("/wordlists/Swedish/ord.utf8")
       val words = Source.fromInputStream(instream).getLines.toList
       val filtered = words.filter(wordFilter)
       filtered.foreach(println)
