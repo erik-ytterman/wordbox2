@@ -14,11 +14,17 @@ object WordStats {
   }
 
   def main(args: Array[String]) {
+    val playstate = new PlayState(4,5)
+
+    playstate.print
+    println
+    println(playstate.row(1))
+    println(playstate.column(2))
+
     try {
       val instream = getClass.getResourceAsStream("/wordlists/Swedish/ord.utf8")
       val words = Source.fromInputStream(instream).getLines.toList
       val filtered = words.filter(wordFilter)
-      filtered.foreach(println)
     } catch {
       case ex: IOException => println("Had an IOException trying to read that file" + ex)
     }
