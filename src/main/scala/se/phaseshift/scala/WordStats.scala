@@ -17,9 +17,21 @@ object WordStats {
     val playstate = new PlayState(4,5)
 
     playstate.print
-    println
+    println("----------------------")
     println(playstate.row(1))
     println(playstate.column(2))
+    println("----------------------")
+    playstate.row(1, "11111X")
+    playstate.print
+    println("----------------------")
+    playstate.row(1, "222")
+    playstate.print
+    println("----------------------")
+    playstate.column(1, "33333X")
+    playstate.print
+    println("----------------------")
+    playstate.column(1, "444")
+    playstate.print
 
     try {
       val instream = getClass.getResourceAsStream("/wordlists/Swedish/ord.utf8")

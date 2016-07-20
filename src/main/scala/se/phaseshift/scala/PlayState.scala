@@ -10,11 +10,27 @@ class PlayState(rows: Int, columns: Int) {
     }
   }
 
-  def row(rownr: Int): String = {
-    playstate(rownr).mkString
+  def row(rownr: Int, word: String) {
+    if(rownr < rows && rownr >= 0) {
+      for((chr, index) <- word.zipWithIndex) {
+        if(index < columns) playstate(rownr)(index)  = chr
+      }
+    }
   }
 
-  def column(colnr: Int): String = {
-    (playstate.map(_(colnr))).mkString
+  def row(rownr: Int): String = rownr match {
+    case _ if (rownr < rows && rownr >= 0) => playstate(rownr).mkString
+  }
+
+  def column(colnr: Int, word: String) {
+    if(colnr < columns && colnr >= 0) {
+      for((row, index) <- playstate.zipWithIndex) {
+        if (index < word.length) row(colnr) = word(index)
+      }
+    }
+  }
+
+  def column(colnr: Int): String = colnr match {
+    case _ if (colnr < columns && colnr > 0) => (playstate.map(_(colnr))).mkString
   }
 }
