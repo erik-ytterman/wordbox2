@@ -27,10 +27,12 @@ object WordStats {
     playstate.row(1, "222")
     playstate.print
     println("----------------------")
-    playstate.column(1, "33333X")
+    playstate.column(1, "33")
+    playstate.column(3, "333")
+    playstate.column(4, "3333X")
     playstate.print
     println("----------------------")
-    playstate.column(1, "444")
+    playstate.column(1, "44444X")
     playstate.print
 
     try {
