@@ -6,14 +6,15 @@ var filtered = words.filter(_.length == 5)
 
 val playstate = MutableList[String]()
 
-var columnfilters = (word: String) => {
-  for((chr, index) <- word.zipWithIndex) yield { 
-    var filterstring = playstate.map(_(index)).mkString + word(index).toString
-    filtered.find(_.slice(0, playstate.length + 1) == filterstring) match { case Some(word) => true case None => false } 
+var columnfilters = (word: String) => { for((chr, index) <- word.zipWithIndex) yield { playstate.map(_(index)).mkString + word(index).toString } }
+
+var columnmatcher = (filters: List[String]) => {
+  for(filter <- filters) yield {
+    filtered.find(_.slice(0, playstate.length + 1) == filter) match { case Some(word) => true case None => false }
   }
 }
 
-var wordfilter = (word: String) => { columnfilter(word).foldLeft(true)(_ && _) } : Boolean
+var wordmatcher = (word: String) => { columnmatcher(columnfilters(word).toList).foldLeft(true)(_ && _) } : Boolean
 
-var validwords = filtered.filter(wordselector(_))
+var validwords = filtered.filter(wordmatcher(_))
 
