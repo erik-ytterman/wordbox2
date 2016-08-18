@@ -2,7 +2,7 @@ import scala.io.Source
 import scala.collection.mutable.MutableList
 
 var words = Source.fromFile("/mnt/hgfs/Dump/Text/Wordlists/Swedish/ord.utf8").getLines.toList
-var filtered = words.filter(_.length == 5)
+var filtered = words.filter(_.length == 3)
 
 val playstate = MutableList[String]()
 
