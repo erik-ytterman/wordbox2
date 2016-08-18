@@ -1,20 +1,39 @@
 import scala.io.Source
 import scala.collection.mutable.MutableList
 
-var words = Source.fromFile("/mnt/hgfs/Dump/Text/Wordlists/Swedish/ord.utf8").getLines.toList
-var filtered = words.filter(_.length == 3)
+// Load present word database from text file and turn it into a list
+val words = Source.fromFile("/mnt/hgfs/Dump/Text/Wordlists/Swedish/ord.utf8").getLines.toList
 
+// Filter out words of desired length (4)
+var filtered = words.filter(_.length == 4)
+
+// Create list containing the playfield state, one string per pow in the playfield
 val playstate = MutableList[String]()
 
-var columnfilters = (word: String) => { for((chr, index) <- word.zipWithIndex) yield { playstate.map(_(index)).mkString + word(index).toString } }
+// Create helper functions to use playstate
+val minlength = () => playstate.isEmpty match { case false => playstate.map(_.length).min case true => 0 }
+val rows = () => for((row, index) <- playstate.zipWithIndex.toList) yield { (index + 1, row) }
+val columns = () => for(position <- (1 to minlength()).toList ) yield { (position, playstate.map(_(position - 1)).mkString) }
 
-var columnmatcher = (filters: List[String]) => {
-  for(filter <- filters) yield {
-    filtered.find(_.slice(0, playstate.length + 1) == filter) match { case Some(word) => true case None => false }
+// Define anonymous function that extracts filter strings for each column
+// The result will be a list containing the starting characters for each column
+def columnfilters(word: String) = {
+  playstate.isEmpty match {
+    case true => for((chr, index) <- word.zipWithIndex.toList ) yield { chr.toString }
+    case false => for((index, column) <- columns().toList ) yield { column + word(index - 1) }
   }
 }
 
-var wordmatcher = (word: String) => { columnmatcher(columnfilters(word).toList).foldLeft(true)(_ && _) } : Boolean
+def columnmatcher(filters: List[String]) = {
+  for(filter <- filters) yield {
+    filtered.find(_.slice(0, playstate.length + 1) == filter) match {
+      case Some(word) => true
+      case None => false
+    }
+  }
+}
 
-var validwords = filtered.filter(wordmatcher(_))
+val wordmatcher = (word: String) => { columnmatcher(columnfilters(word)).foldLeft(true)(_ && _) } : Boolean
+
+// var validwords = filtered.filter(wordmatcher(_))
 
