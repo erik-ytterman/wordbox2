@@ -1,0 +1,66 @@
+/* 
+Run in the scala shell according to the following:
+:load script.txt
+gamesolver()
+rows()
+columns()
+*/
+
+import scala.io.Source
+import scala.collection.mutable.ListBuffer
+import scala.util.Random
+
+// Load present word database from text file and turn it into a list
+val words = Source.fromFile("/mnt/hgfs/Dump/Text/Wordlists/Swedish/ord.utf8").getLines.toList
+val gamesize = 4
+
+// Filter out words of desired length (4)
+var filtered = words.filter(_.length == gamesize)
+
+// Create list containing the playfield state, one string per pow in the playfield
+val gamestate = ListBuffer[String]()
+
+// Create helper functions to use gamestate
+val minlength = () => gamestate.isEmpty match { case false => gamestate.map(_.length).min case true => 0 }
+val rows = () => for((row, index) <- gamestate.zipWithIndex.toList) yield { (index + 1, row) }
+val columns = () => for(position <- (1 to minlength()).toList ) yield { (position, gamestate.map(_(position - 1)).mkString) }
+
+// Define anonymous function that extracts filter strings for each column
+// The result will be a list containing the starting characters for each column
+def columnfilters(word: String) = {
+  gamestate.isEmpty match {
+    case true => for((chr, index) <- word.zipWithIndex.toList ) yield { chr.toString }
+    case false => for((index, column) <- columns().toList ) yield { column + word(index - 1) }
+  }
+}
+
+def columnmatcher(filters: List[String]) = {
+  for(filter <- filters) yield {
+    filtered.find(_.slice(0, gamestate.length + 1) == filter) match {
+      case Some(word) => true
+      case None => false
+    }
+  }
+}
+
+def gamesolver() = {
+  val wordmatcher = (word: String) => { columnmatcher(columnfilters(word)).foldLeft(true)(_ && _) } : Boolean
+
+  while(gamestate.length < gamesize) {
+    var possiblewords = filtered.filter(wordmatcher(_))
+
+    if(! possiblewords.isEmpty) {
+      gamestate += possiblewords(Random.nextInt(possiblewords.length)) 
+
+      print(".")
+    }
+    else {
+      gamestate.remove(gamestate.length - 1)
+      print("\nFAIL")
+    }
+  }
+}
+
+
+
+
