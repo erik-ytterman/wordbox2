@@ -15,7 +15,8 @@ val words = Source.fromFile("/mnt/hgfs/Dump/Text/Wordlists/Swedish/ord.utf8").ge
 val gamesize = 5
 
 // Filter out words of desired length (4)
-var valid = words.filter(_.length == gamesize)
+val random = new Random(System.currentTimeMillis)
+val valid = words.filter(_.length == gamesize)
 
 // Create list containing the playfield state, one string per pow in the playfield
 val gamestate = ListBuffer[String]()
@@ -54,8 +55,9 @@ def gamereset() = {
 }
 
 def gamesolver(depth: Int): Boolean = {
-  val random = new Random(System.currentTimeMillis)
-  val possible = random.shuffle(valid.filter(wordmatcher(_)))
+  val possible = valid.filter(wordmatcher(_))
+
+  print(depth)
 
   if(gamestate.length == gamesize) {
     println("-------------------------------")
@@ -70,7 +72,7 @@ def gamesolver(depth: Int): Boolean = {
   else {
     for(word <- possible) {
 
-      gamestate += word
+      gamestate += possible(random.nextInt(possible.length))
 
       if(! gamesolver(depth + 1)) { 
         gamestate.remove(gamestate.length - 1)  
