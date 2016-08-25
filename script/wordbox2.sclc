@@ -1,84 +1,36 @@
-/* 
-Run in the scala shell according to the following:
-:load script.txt
-gamesolver()
-rows()
-columns()
-*/
-
 import scala.io.Source
-import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
 // Load present word database from text file and turn it into a list
-val words = Source.fromFile("/mnt/hgfs/Dump/Text/Wordlists/Swedish/ord.utf8").getLines.toList
+val words = Source.fromFile("/mnt/hgfs/Dump/Text/Wordlists/Swedish/ord.utf8").getLines.toArray
 val gamesize = 5
 
 // Filter out words of desired length (4)
 val random = new Random(System.currentTimeMillis)
-val valid = words.filter(_.length == gamesize)
+val valid = random.shuffle(words.filter(_.length == gamesize).toList)
 
 // Create list containing the playfield state, one string per pow in the playfield
-val gamestate = ListBuffer[String]()
+var gamestate = List[String]()
 
-// Create helper functions to use gamestate
-val minlength = () => gamestate.isEmpty match { case false => gamestate.map(_.length).min case true => 0 }
-val rows = () => for((row, index) <- gamestate.zipWithIndex.toList) yield { (index + 1, row) }
-val columns = () => for(position <- (1 to minlength()).toList ) yield { (position, gamestate.map(_(position - 1)).mkString) }
-
-// Define anonymous function that extracts filter strings for each column
-// The result will be a list containing the starting characters for each column
-def columnfilters(word: Option[String]) = {
-  (word, gamestate.isEmpty) match {
-    case (None, true) => for(a <- (1 to gamesize).toList ) yield { "" }
-    case (Some(word), true) => for((chr, index) <- word.zipWithIndex.toList ) yield { chr.toString }
-    case (None, false) => for((index, column) <- columns().toList ) yield { column }
-    case (Some(word), false) => for((index, column) <- columns().toList ) yield { column + word(index - 1) }
-  }
-}
-
-def columnmatcher(filters: List[String]): List[Boolean] = {
-  for(filter <- filters) yield {
-    valid.find(_.startsWith(filter)) match {
-      case None => false
-      case Some(word) => true
-    }
-  }
-}
-
-def wordmatcher(word: String): Boolean = { 
-  return columnmatcher(columnfilters(Some(word))).foldLeft(true)(_ && _)
-}
-
-def gamereset() = {
-  gamestate.clear()
-}
-
-def gamesolver(depth: Int): Boolean = {
-  val possible = valid.filter(wordmatcher(_))
-
-  print(depth)
-
-  if(gamestate.length == gamesize) {
+def gamesolver(state: List[String]): Boolean = {
+  if(state.length == gamesize) {
     println("-------------------------------")
-    println(rows())
-    println(columns())
-    println("-------------------------------")
+    state.foreach(println(_))
+    gamestate = state
     return(true)
   }
-  else if(possible.isEmpty) {
-    return(false)
-  }
-  else {
-    for(word <- possible) {
 
-      gamestate += possible(random.nextInt(possible.length))
+  for(word <- valid) {
+    val newstate = state ::: List(word)
 
-      if(! gamesolver(depth + 1)) { 
-        gamestate.remove(gamestate.length - 1)  
-      }
-      else {
-        return(true)
+    var columnfilters = newstate.transpose.map( _.foldLeft("")(_ + _) )
+    var columnwords = columnfilters.map( columnfilter => valid.filter( _.startsWith(columnfilter) ) )
+    var hasvalidcolumns = columnwords.map(! _.isEmpty )
+    var isvalidword = hasvalidcolumns.reduce(_ && _)
+
+    if(isvalidword) {
+      if(gamesolver(newstate)) {
+        return true
       }
     }
   }
