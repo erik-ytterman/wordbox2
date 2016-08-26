@@ -8,23 +8,19 @@ import java.io.{FileReader, FileNotFoundException, IOException}
 
 object WordStats {
   // Read words from resource file
-  val instream = getClass.getResourceAsStream("/wordlists/Swedish/ord.utf8")
-  val words = Source.fromInputStream(instream).getLines.toList
-  val gamesize = 4
+  private val instream = getClass.getResourceAsStream("/wordlists/Swedish/ord.utf8")
+  private val words = Source.fromInputStream(instream).getLines.toList.map(_.toUpperCase)
+  private var gamesize = 4
 
   // Filter out words of desired length (4)
-  val random = new Random(System.currentTimeMillis)
-  val valid = words.filter(_.length == gamesize).toList
+  private val random = new Random(System.currentTimeMillis)
+  private var valid = words.filter(_.length == gamesize).toList
 
   // Create list containing the playfield state, one string per pow in the playfield
-  var gamestate = List[String]()
-
-  // Anonymouns accessor functions to expose the result
-  var rows = () => { gamestate }: List[String]
-  var columns = () => { gamestate.transpose.map( _.foldLeft("")(_ + _) ) }: List[String]
-
+  private var gamestate = List[String]()
+  
   // Recursive solution finding function
-  def gamesolver(state: List[String] = List[String]()): Boolean = {
+  private def gamesolver(state: List[String] = List[String]()): Boolean = {
 
     if(state.length < gamesize) {
 
@@ -48,9 +44,19 @@ object WordStats {
     }
   }
 
+  // Accessor functions to expose the result
+  def rows(): List[String] = { gamestate }
+  def columns(): List[String] = { gamestate.transpose.map( _.foldLeft("")(_ + _) ) }
+
   // Program entry point
   def main(args: Array[String]) {
     try {
+      if(args.length > 0) {
+        gamesize = args(0).toInt
+        valid = words.filter(_.length == gamesize).toList.map(_.toUpperCase)
+        println( "Using: %d words of length %d".format(valid.length, gamesize) )
+      }
+
       if( gamesolver() ) {
         rows().foreach( println(_) )
       }
