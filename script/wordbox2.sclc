@@ -3,40 +3,41 @@ import scala.util.Random
 
 // Load present word database from text file and turn it into a list
 val words = Source.fromFile("/mnt/hgfs/Dump/Text/Wordlists/Swedish/ord.utf8").getLines.toArray
-val gamesize = 5
+val gamesize = 4
 
 // Filter out words of desired length (4)
 val random = new Random(System.currentTimeMillis)
-val valid = random.shuffle(words.filter(_.length == gamesize).toList)
+val valid = words.filter(_.length == gamesize).toList
 
 // Create list containing the playfield state, one string per pow in the playfield
 var gamestate = List[String]()
 
-def gamesolver(state: List[String]): Boolean = {
-  if(state.length == gamesize) {
-    println("-------------------------------")
-    state.foreach(println(_))
-    gamestate = state
-    return(true)
-  }
+// Anonymouns accessor functions to expose the result
+var rows = () => { gamestate }: List[String] 
+var columns = () => { gamestate.transpose.map( _.foldLeft("")(_ + _) ) }: List[String]
 
-  for(word <- valid) {
-    val newstate = state ::: List(word)
+// Recursive solution finding function
+def gamesolver(state: List[String] = List[String]()): Boolean = {
 
-    var columnfilters = newstate.transpose.map( _.foldLeft("")(_ + _) )
-    var columnwords = columnfilters.map( columnfilter => valid.filter( _.startsWith(columnfilter) ) )
-    var hasvalidcolumns = columnwords.map(! _.isEmpty )
-    var isvalidword = hasvalidcolumns.reduce(_ && _)
+  if(state.length < gamesize) {
 
-    if(isvalidword) {
-      if(gamesolver(newstate)) {
-        return true
-      }
+    for(word <- random.shuffle(valid)) {
+      val newstate = state ::: List(word)
+
+      var columnfilters = newstate.transpose.map( _.foldLeft("")(_ + _) )
+      var columnwords = columnfilters.map( columnfilter => valid.filter( _.startsWith(columnfilter) ) )
+      var isvalidcolumn = columnwords.map(! _.isEmpty )
+      var isvalidword = isvalidcolumn.reduce(_ && _)
+
+      if( isvalidword ) { if( gamesolver(newstate) )  { return true } }
     }
+
+    return false
+
+  } else {
+    gamestate = state
+
+    return true
   }
-
-  return false
 }
-
-
 
