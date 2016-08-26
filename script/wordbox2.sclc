@@ -7,7 +7,7 @@ val gamesize = 4
 
 // Filter out words of desired length (4)
 val random = new Random(System.currentTimeMillis)
-val valid = words.filter(_.length == gamesize).toList
+val valid = words.filter(_.length == gamesize).toList.map(_.toUpperCase)
 
 // Create list containing the playfield state, one string per pow in the playfield
 var gamestate = List[String]()
