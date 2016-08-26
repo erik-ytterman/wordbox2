@@ -2,7 +2,7 @@ import scala.io.Source
 import scala.util.Random
 
 // Load present word database from text file and turn it into a list
-val words = Source.fromFile("/mnt/hgfs/Dump/Text/Wordlists/Swedish/ord.utf8").getLines.toArray
+val words = Source.fromFile("./src/main/resources/wordlists/Swedish/ord.utf8").getLines.toArray
 val gamesize = 4
 
 // Filter out words of desired length (4)
